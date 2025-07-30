@@ -36,7 +36,6 @@ app.get("/", async (req, res) => {
 
 app.post("/", async (req, res) => {
   const { fname, email } = req.body;
-  debugger;
   try {
     const result = await pool.query(
       "INSERT INTO employee (fname, email) VALUES ($1, $2) RETURNING *",
@@ -48,6 +47,22 @@ app.post("/", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.get("/users/:id", (req, res, next) => {
+  const userId = req.params.id;
+  console.log("userId", userId);
+
+  if (userId === "admin") {
+    const error = new Error("Access denied");
+    error.status = 403;
+    next(error);
+  } else {
+    // Handle the regular flow
+  }
+});
+app.use((err, req, res, next) => {
+  res.status(err.status || 500).json({ error: err.message });
+}); 
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
