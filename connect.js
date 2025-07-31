@@ -34,6 +34,8 @@ app.get("/", async (req, res) => {
   }
 });
 
+const emitter = require("./eventEmitters");
+
 app.post("/", async (req, res) => {
   const { fname, email } = req.body;
   try {
@@ -41,6 +43,7 @@ app.post("/", async (req, res) => {
       "INSERT INTO employee (fname, email) VALUES ($1, $2) RETURNING *",
       [fname, email]
     );
+    emitter.emit("userAdded", result.rows[0]);
     res.status(201).json({ emp: result.rows[0] });
   } catch (err) {
     console.error("Error inserting employee:", err);
@@ -62,7 +65,7 @@ app.get("/users/:id", (req, res, next) => {
 });
 app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message });
-}); 
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
